@@ -1,6 +1,5 @@
 import React, { useRef, useEffect } from "react";
 import "./VideoPanel.css";
-import config from "../../config";
 
 function VideoPanel({ stream, ipUrl, boxes }) {
 	const videoRef = useRef(null);
@@ -75,10 +74,25 @@ function VideoPanel({ stream, ipUrl, boxes }) {
 			ctx.clearRect(0, 0, width, height);
 
 			boxes.forEach((b) => {
-				// Для простоты обводим белым цветом
-				ctx.strokeStyle = "#ffffff";
+				let hash = 0;
+				const str = b.name;
+				for (let i = 0; i < str.length; i++) {
+					hash = str.charCodeAt(i) + ((hash << 5) - hash);
+				}
+				let color = '#';
+				for (let i = 0; i < 3; i++) {
+					const value = (hash >> (i * 8)) & 0xFF;
+					color += ('00' + value.toString(16)).substr(-2);
+				}
+
+				ctx.strokeStyle = color;
 				ctx.lineWidth = 2;
 				ctx.strokeRect(b.x1, b.y1, b.x2 - b.x1, b.y2 - b.y1);
+				if (b.name) {
+					ctx.fillStyle = "#FFFFFF";
+					ctx.font = "14px Arial";
+					ctx.fillText(b.name, b.x1 + 5, b.y1 - 5);
+				}
 			});
 		};
 
@@ -126,7 +140,7 @@ function VideoPanel({ stream, ipUrl, boxes }) {
 				style={{display: "none", width: "640px", height: "480px"}}
 				alt="IP Camera"
 			/>
-			<canvas className="VideoCanvas" ref={canvasRef} height={config.canvasHeight + "px"} width={config.canvasWidth + "px"} />
+			<canvas className="VideoCanvas" ref={canvasRef}/>
 		</div>
 	);
 }
